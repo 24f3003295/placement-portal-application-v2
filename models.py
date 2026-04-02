@@ -56,6 +56,8 @@ class JobPosition(db.Model):
     eligibility_criteria = db.Column(db.String(200))
     deadline = db.Column(db.Date)
     status = db.Column(db.String(20), default='pending')
+    is_approved = db.Column(db.Boolean, default=False)
+
 
     applications = db.relationship('Application', backref='job', lazy=True)
 

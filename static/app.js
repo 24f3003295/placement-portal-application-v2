@@ -21,12 +21,13 @@ const app = Vue.createApp({
 
                 // Redirect based on role
                 if (res.data.role === "admin") {
-                    alert("Go to Admin Dashboard");
+                    window.location.href = "/admin";
                 } else if (res.data.role === "company") {
-                    alert("Go to Company Dashboard");
+                    window.location.href = "company.html";
                 } else {
-                    alert("Go to Student Dashboard");
+                    window.location.href = "student.html";
                 }
+
 
             } catch (err) {
                 alert("Login failed");
