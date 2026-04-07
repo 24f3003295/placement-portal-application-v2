@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PPA Login</title>
+    <title>Login</title>
     <script src="https://unpkg.com/vue@3"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
@@ -10,13 +10,23 @@
 <div id="app">
     <h2>Login</h2>
 
+    <!-- ROLE SELECT -->
+    <select v-model="role">
+        <option disabled value="">Select Role</option>
+        <option value="admin">Admin</option>
+        <option value="company">Company</option>
+        <option value="student">Student</option>
+    </select><br><br>
+
     <input v-model="email" placeholder="Email"><br><br>
     <input v-model="password" type="password" placeholder="Password"><br><br>
 
     <button @click="login">Login</button>
+    <br><br>
+
+    <button @click="goToRegister">Register</button>
 </div>
 
-<script src="/static/app.js"></script>
+<script src="/static/login.js"></script>
 </body>
 </html>
-    

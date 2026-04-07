@@ -67,15 +67,19 @@ def login():
     if not user or not check_password_hash(user.password, data['password']):
         return jsonify({"error": "Invalid credentials"}), 401
 
-    # Block unapproved company
     if user.role == 'company':
-        if user.company.approval_status != 'approved':
+        company = Company.query.filter_by(user_id=user.id).first()
+        
+        if not company:
+            return jsonify({"error": "Company profile missing"}), 404
+
+        if company.approval_status != 'approved':
             return jsonify({"error": "Company not approved by admin"}), 403
 
     token = create_access_token(identity=str(user.id))
-
 
     return jsonify({
         "token": token,
         "role": user.role
     })
+

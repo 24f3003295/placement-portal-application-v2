@@ -33,11 +33,19 @@ const app = Vue.createApp({
 
         // Companies
         async fetchCompanies() {
-            const res = await axios.get(`/admin/companies?search=${this.companySearch}`);
+            let url = "/admin/companies";
+
+            if (this.companySearch.trim() !== "") {
+                url += `?search=${this.companySearch}`;
+            }
+
+            const res = await axios.get(url);
             this.companies = res.data;
         },
 
+
         async approve(id) {
+            console.log("Approve clicked for:", id); 
             await axios.put(`/admin/company/${id}/approve`);
             this.fetchCompanies();
         },
@@ -54,9 +62,16 @@ const app = Vue.createApp({
 
         // Students
         async fetchStudents() {
-            const res = await axios.get(`/admin/students?search=${this.studentSearch}`);
+            let url = "/admin/students";
+
+            if (this.studentSearch.trim() !== "") {
+                url += `?search=${this.studentSearch}`;
+            }
+
+            const res = await axios.get(url);
             this.students = res.data;
         },
+
 
         async deactivateStudent(id) {
             await axios.put(`/admin/student/${id}/deactivate`);

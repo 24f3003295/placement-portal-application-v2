@@ -12,7 +12,6 @@ class User(db.Model):
     role = db.Column(db.String(20))  # admin, company, student
     is_active = db.Column(db.Boolean, default=True)
 
-    company = db.relationship('Company', backref='user', uselist=False)
     student = db.relationship('Student', backref='user', uselist=False)
 
 
@@ -26,6 +25,7 @@ class Company(db.Model):
     website = db.Column(db.String(200))
     approval_status = db.Column(db.String(20), default='pending')
     is_blacklisted = db.Column(db.Boolean, default=False)
+    user = db.relationship('User', backref='company', uselist=False)
 
     jobs = db.relationship('JobPosition', backref='company', lazy=True)
 
@@ -51,8 +51,10 @@ class JobPosition(db.Model):
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     title = db.Column(db.String(100))
     description = db.Column(db.Text)
+    is_active = db.Column(db.Boolean, default=True)
     salary = db.Column(db.Float)
     skills_required = db.Column(db.Text)
+    experience = db.Column(db.String(50))
     eligibility_criteria = db.Column(db.String(200))
     deadline = db.Column(db.Date)
     status = db.Column(db.String(20), default='pending')
@@ -69,6 +71,9 @@ class Application(db.Model):
     job_id = db.Column(db.Integer, db.ForeignKey('job_position.id'))
     status = db.Column(db.String(20), default='applied')
     applied_date = db.Column(db.DateTime, default=datetime.utcnow)
+    feedback = db.Column(db.String(255))
+    interview_date = db.Column(db.String(50))
+    interview_location = db.Column(db.String(255))
 
     placement = db.relationship('Placement', backref='application', uselist=False)
 

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <script src="https://unpkg.com/vue@3"></script>
+</head>
+
+<body>
+<div id="app">
+
+<h2>Register</h2>
+
+<!-- ROLE -->
+<select v-model="role">
+    <option disabled value="">Select Role</option>
+    <option value="company">Company</option>
+    <option value="student">Student</option>
+</select><br><br>
+
+<!-- COMMON -->
+<input v-model="email" placeholder="Email"><br><br>
+<input v-model="password" placeholder="Password"><br><br>
+
+<!-- COMPANY FIELDS -->
+<div v-if="role === 'company'">
+    <input v-model="company_name" placeholder="Company Name"><br><br>
+    <input v-model="industry" placeholder="Industry"><br><br>
+    <input v-model="location" placeholder="Location"><br><br>
+    <input v-model="website" placeholder="Website"><br><br>
+</div>
+
+<!-- STUDENT FIELDS -->
+<div v-if="role === 'student'">
+    <input v-model="name" placeholder="Name"><br><br>
+    <input v-model="course" placeholder="Course"><br><br>
+</div>
+
+<button @click="register">Register</button>
+
+</div>
+
+<script src="/static/register.js"></script>
+</body>
+</html>

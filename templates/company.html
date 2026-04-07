@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Company Dashboard</title>
+</head>
+<body>
+
+<h1>Company Dashboard</h1>
+
+<button onclick="loadDashboard()">Load Dashboard</button>
+
+<h2>Jobs</h2>
+<ul id="jobs"></ul>
+
+<h2>Applications</h2>
+<ul id="applications"></ul>
+
+<h2>Post Job</h2>
+<input id="title" placeholder="Title"><br>
+<input id="skills" placeholder="Skills"><br>
+<input id="experience" placeholder="Experience"><br>
+<input id="salary" placeholder="Salary"><br>
+<button onclick="createJob()">Create Job</button>
+
+
+</body>
+<script src="{{ url_for('static', filename='company.js') }}"></script>
+
+</html>

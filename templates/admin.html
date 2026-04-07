@@ -35,9 +35,9 @@
         </tr>
 
         <tr v-for="c in companies" :key="c.id">
-            <td>[[ c.name ]]</td>
+            <td>[[ c.company_name ]]</td>
             <td>[[ c.email ]]</td>
-            <td>[[ c.is_approved ]]</td>
+            <td>[[ c.approval_status ]]</td>
             <td>
                 <button @click="approve(c.id)">Approve</button>
                 <button @click="deleteCompany(c.id)">Delete</button>
