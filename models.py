@@ -74,6 +74,9 @@ class Application(db.Model):
     feedback = db.Column(db.String(255))
     interview_date = db.Column(db.String(50))
     interview_location = db.Column(db.String(255))
+    offer_letter = db.Column(db.String(200))
+    salary = db.Column(db.Float)
+    joining_date = db.Column(db.Date)
 
     placement = db.relationship('Placement', backref='application', uselist=False)
 
@@ -91,6 +94,7 @@ class Placement(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     job_id = db.Column(db.Integer, db.ForeignKey('job_position.id'))
+    offer_letter = db.Column(db.String(200))
 
     salary = db.Column(db.Float)
     joining_date = db.Column(db.Date)

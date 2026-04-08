@@ -128,25 +128,66 @@ window.viewApps = function (jobId) {
 // UPDATE STATUS
 // =======================
 window.updateStatus = function (id, status) {
-    console.log("Updating status:", id, status);
+    const token = localStorage.getItem("token");
 
-    fetch(`/company/application/${id}/update`, {
-        method: 'PUT',
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({
-            status: status
+    if (status === 'selected') {
+        const fileInput = document.getElementById("offerLetterInput");
+        
+        // Reset the input so it triggers even if the same file is picked twice
+        fileInput.value = "";
+
+        fileInput.onchange = function () {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // USE FORMDATA FOR FILES
+            const formData = new FormData();
+            formData.append("status", "selected");
+            formData.append("offer_letter", file);
+            formData.append("feedback", "Congratulations! You are selected.");
+
+            console.log("Uploading offer letter for app:", id);
+
+            fetch(`/company/application/${id}/update`, {
+                method: 'PUT',
+                headers: {
+                    "Authorization": "Bearer " + token
+                    // IMPORTANT: Do NOT set Content-Type header here
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                alert(data.msg);
+                loadDashboard();
+            })
+            .catch(err => alert("Upload failed: " + err.message));
+        };
+
+        // Open the file dialog
+        fileInput.click();
+
+    } else {
+        // NORMAL JSON UPDATE (Shortlisted / Rejected)
+        fetch(`/company/application/${id}/update`, {
+            method: 'PUT',
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({ 
+                status: status,
+                feedback: `Status updated to ${status}`
+            })
         })
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log(data);
-        alert(data.msg);
-        loadDashboard();
-    })
-    .catch(err => console.error("Update status error:", err));
+        .then(res => res.json())
+        .then(data => {
+            alert(data.msg);
+            loadDashboard();
+        })
+        .catch(err => console.error("Update error:", err));
+    }
 };
 
 // =======================

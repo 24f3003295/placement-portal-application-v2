@@ -56,8 +56,22 @@ const app = Vue.createApp({
         },
 
         async deactivate(id) {
-            await axios.put(`/admin/company/${id}/deactivate`);
-            this.fetchCompanies();
+            try {
+                const response = await axios.put(`/admin/company/${id}/deactivate`);
+                
+                if (response.status === 200) {
+                    // 1. Show the message from the backend ("Company deactivated")
+                    alert(response.data.msg); 
+
+                    // 2. Refresh your list from the server
+                    await this.fetchCompanies();
+                    
+                }
+            } catch (error) {
+                console.error("Deactivation failed:", error);
+                const errorMsg = error.response?.data?.error || "Could not deactivate company.";
+                alert(errorMsg);
+            }
         },
 
         // Students
@@ -74,8 +88,14 @@ const app = Vue.createApp({
 
 
         async deactivateStudent(id) {
-            await axios.put(`/admin/student/${id}/deactivate`);
-            this.fetchStudents();
+            try {
+                const response = await axios.put(`/admin/student/${id}/deactivate`);
+                alert(response.data.msg);
+                await this.fetchStudents();
+            } catch (error) {
+                const errorMsg = error.response?.data?.error || "An error occurred.";
+                alert(errorMsg);
+            }
         },
 
         // Jobs

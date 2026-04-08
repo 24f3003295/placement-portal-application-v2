@@ -11,7 +11,6 @@
 
     <h2>Admin Dashboard</h2>
     
-    <!-- Stats -->
     <h3>Stats</h3>
     <p>Students: [[ stats.students ]]</p>
     <p>Companies: [[ stats.companies ]]</p>
@@ -20,7 +19,6 @@
 
     <hr>
 
-    <!-- Companies -->
     <h3>Companies</h3>
 
     <input v-model="companySearch" placeholder="Search company">
@@ -41,14 +39,15 @@
             <td>
                 <button @click="approve(c.id)">Approve</button>
                 <button @click="deleteCompany(c.id)">Delete</button>
-                <button @click="deactivate(c.id)">Deactivate</button>
+                <button @click="deactivate(c.id)">
+                    [[ c.is_blacklisted ? 'Activate' : 'Deactivate' ]]
+                </button>
             </td>
         </tr>
     </table>
 
     <hr>
 
-    <!-- Students -->
     <h3>Students</h3>
 
     <input v-model="studentSearch" placeholder="Search student">
@@ -58,25 +57,23 @@
         <tr>
             <th>Name</th>
             <th>Email</th>
-            <th>Active</th>
+            <th>Status</th>
             <th>Actions</th>
         </tr>
 
         <tr v-for="s in students" :key="s.id">
             <td>[[ s.name ]]</td>
             <td>[[ s.email ]]</td>
-            <td>[[ s.is_active ]]</td>
+            <td>[[ s.is_blacklisted ? 'Blacklisted' : 'Active' ]]</td>
             <td>
-                <button @click="deactivateStudent(s.id)">Deactivate</button>
+                <button @click="deactivateStudent(s.id)">
+                    [[ s.is_blacklisted ? 'Activate' : 'Deactivate' ]]
+                </button>
             </td>
         </tr>
     </table>
-
-    <hr>
-
-    <!-- Jobs -->
+    
     <h3>Jobs</h3>
-
     <table border="1">
         <tr>
             <th>Title</th>
@@ -84,7 +81,6 @@
             <th>Approved</th>
             <th>Actions</th>
         </tr>
-
         <tr v-for="j in jobs" :key="j.id">
             <td>[[ j.title ]]</td>
             <td>[[ j.company_id ]]</td>
@@ -98,9 +94,7 @@
 
     <hr>
 
-    <!-- Applications -->
     <h3>Applications</h3>
-
     <table border="1">
         <tr>
             <th>Student</th>
@@ -108,7 +102,6 @@
             <th>Status</th>
             <th>Actions</th>
         </tr>
-
         <tr v-for="a in applications" :key="a.id">
             <td>[[ a.student_id ]]</td>
             <td>[[ a.job_id ]]</td>

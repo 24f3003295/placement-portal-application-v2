@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+</head>
+<body>
+
+<h1>Student Dashboard</h1>
+
+<nav>
+    <button onclick="showSection('jobsSection'); loadJobs()">Jobs</button>
+    <button onclick="showSection('applicationsSection'); loadApplications()">My Applications</button>
+    <button onclick="showSection('interviewsSection'); loadInterviews()">Interviews</button>
+    <button onclick="showSection('placementsSection'); loadPlacements()">Placements</button>
+    <button onclick="showSection('profileSection'); loadProfile()">Profile</button>
+</nav>
+
+<hr>
+
+<div id="profileSection" style="display:none;">
+    
+    <h2>Update Profile</h2>
+    <input id="branch" placeholder="Branch"><br><br>
+    <input id="cgpa" placeholder="CGPA"><br><br>
+    <input id="year" placeholder="Graduation Year"><br><br>
+    <input id="skillsInput" placeholder="Skills"><br><br>
+    <input id="resume" placeholder="Resume Link"><br><br>
+
+    <button onclick="updateProfile()">Update Profile</button>
+</div>
+
+<div id="jobsSection">
+    <h2>Search Jobs</h2>
+    <input id="search" placeholder="Search by title, skills, company">
+    <button onclick="searchJobs()">Search</button>
+
+    <h2>Jobs</h2>
+    <ul id="jobs"></ul>
+</div>
+
+<div id="applicationsSection" style="display:none;">
+    <h2>My Applications</h2>
+    <ul id="applications"></ul>
+</div>
+
+<div id="interviewsSection" style="display:none;">
+    <h2>Interviews</h2>
+    <ul id="interviews"></ul>
+</div>
+
+<div id="placementsSection" style="display:none;">
+    <h2>Placements</h2>
+    <ul id="placements"></ul>
+</div>
+
+<script src="{{ url_for('static', filename='student.js') }}"></script>
+</body>
+</html>
