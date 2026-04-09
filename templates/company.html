@@ -1,32 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Company Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Dashboard — PlacementHub</title>
+  <link rel="stylesheet" href="/static/portal.css">
+  <style>
+    .job-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all var(--transition);
+      animation: fadeUp .3s ease both;
+    }
+    .job-card:hover { box-shadow: var(--shadow-md); border-color: #C7D2FE; transform: translateY(-1px); }
+    .job-card + .job-card { margin-top: 10px; }
+
+    .job-title-text {
+      font-weight: 700; font-size: 15px; color: var(--text-primary);
+      font-family: var(--font-heading);
+    }
+    .job-meta { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    .app-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      transition: all var(--transition);
+      animation: fadeUp .3s ease both;
+    }
+    .app-card + .app-card { margin-top: 12px; }
+    .app-card:hover { box-shadow: var(--shadow-md); }
+
+    .app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .app-id { font-weight: 700; font-size: 14px; color: var(--text-primary); }
+    .app-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .post-job-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:600px){ .form-row-2{ grid-template-columns:1fr; } }
+
+    .student-detail-card {
+      background: var(--accent-light);
+      border: 1px solid #BFDBFE;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      animation: fadeUp .25s ease both;
+    }
+    .student-detail-card h4 {
+      font-family: var(--font-heading); font-weight: 700; font-size: 16px;
+      color: var(--accent); margin-bottom: 16px;
+    }
+
+    input[type="file"] { display: none; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media(max-width:900px){ .grid-2{ grid-template-columns: 1fr; } }
+  </style>
 </head>
 <body>
 
-<h1>Company Dashboard</h1>
+<div class="dash-layout">
 
-<button onclick="loadDashboard()">Load Dashboard</button>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">P</div>
+      <div>
+        <div class="sidebar-brand-name">PlacementHub</div>
+        <div class="sidebar-brand-sub">Company Portal</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Management</div>
+      <div class="nav-item active" onclick="scrollTo(0,0)">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="document.getElementById('postJobSection').scrollIntoView({behavior:'smooth'})">
+        <span class="nav-icon">➕</span> Post Job
+      </div>
+    </nav>
+  </aside>
 
-<h2>Jobs</h2>
-<ul id="jobs"></ul>
+  <!-- Main -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-title">Company Dashboard</div>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" onclick="loadDashboard()">🔄 Refresh</button>
+        <div class="avatar">C</div>
+      </div>
+    </header>
 
-<input type="file" id="offerLetterInput" style="display:none" accept=".pdf">
+    <div class="page-content">
 
-<div id="applicationsSection">
-    <h2>Applications</h2>
-    <ul id="applications"></ul>
-</div>
-<h2>Post Job</h2>
-<input id="title" placeholder="Title"><br>
-<input id="skills" placeholder="Skills"><br>
-<input id="experience" placeholder="Experience"><br>
-<input id="salary" placeholder="Salary"><br>
-<button onclick="createJob()">Create Job</button>
+      <!-- Jobs + Applications grid -->
+      <div class="grid-2">
 
+        <!-- Jobs -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <span class="section-title">My Job Listings</span>
+            </div>
+            <div id="jobs">
+              <div class="empty-state"><div class="empty-icon">💼</div><p>Loading jobs…</p></div>
+            </div>
+          </div>
+        </div>
 
-</body>
+        <!-- Applications -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <span class="section-title">Applications</span>
+            </div>
+            <div id="applications">
+              <div class="empty-state"><div class="empty-icon">📋</div><p>Loading applications…</p></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Student Details -->
+      <div id="studentDetails" style="margin-top:24px"></div>
+
+      <!-- Post Job -->
+      <div id="postJobSection" style="margin-top:28px">
+        <div class="post-job-card">
+          <div class="section-title" style="margin-bottom:20px">Post a New Job</div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Job Title</label>
+              <input id="title" class="form-control" placeholder="e.g. Software Engineer">
+            </div>
+            <div class="form-group">
+              <label>Required Skills</label>
+              <input id="skills" class="form-control" placeholder="e.g. Python, React">
+            </div>
+            <div class="form-group">
+              <label>Experience (years)</label>
+              <input id="experience" class="form-control" placeholder="e.g. 0–2">
+            </div>
+            <div class="form-group">
+              <label>Salary (₹ per annum)</label>
+              <input id="salary" class="form-control" placeholder="e.g. 800000">
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="createJob()">
+            ➕ Post Job
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /dash-layout -->
+
+<!-- Hidden file input for offer letter -->
+<input type="file" id="offerLetterInput" accept=".pdf">
+
 <script src="{{ url_for('static', filename='company.js') }}"></script>
-
+</body>
 </html>

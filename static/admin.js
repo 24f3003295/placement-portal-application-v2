@@ -6,13 +6,15 @@ const app = Vue.createApp({
 
     data() {
         return {
+            tab: 'companies',
             stats: {},
             companies: [],
             students: [],
             jobs: [],
             applications: [],
             companySearch: "",
-            studentSearch: ""
+            studentSearch: "",
+            selectedStudent: null
         }
     },
 
@@ -25,6 +27,15 @@ const app = Vue.createApp({
     },
 
     methods: {
+        setTab(name) {
+            this.tab = name;
+            // Update sidebar active state
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const idx = ['companies','students','jobs','applications'].indexOf(name);
+            const items = document.querySelectorAll('.nav-item');
+            if (items[idx]) items[idx].classList.add('active');
+        },
+
         // Stats
         async fetchStats() {
             const res = await axios.get("/admin/stats");
@@ -34,18 +45,12 @@ const app = Vue.createApp({
         // Companies
         async fetchCompanies() {
             let url = "/admin/companies";
-
-            if (this.companySearch.trim() !== "") {
-                url += `?search=${this.companySearch}`;
-            }
-
+            if (this.companySearch.trim() !== "") url += `?search=${this.companySearch}`;
             const res = await axios.get(url);
             this.companies = res.data;
         },
 
-
         async approve(id) {
-            console.log("Approve clicked for:", id); 
             await axios.put(`/admin/company/${id}/approve`);
             this.fetchCompanies();
         },
@@ -58,14 +63,9 @@ const app = Vue.createApp({
         async deactivate(id) {
             try {
                 const response = await axios.put(`/admin/company/${id}/deactivate`);
-                
                 if (response.status === 200) {
-                    // 1. Show the message from the backend ("Company deactivated")
-                    alert(response.data.msg); 
-
-                    // 2. Refresh your list from the server
+                    alert(response.data.msg);
                     await this.fetchCompanies();
-                    
                 }
             } catch (error) {
                 console.error("Deactivation failed:", error);
@@ -74,18 +74,24 @@ const app = Vue.createApp({
             }
         },
 
+        async viewStudent(id) {
+            try {
+                const res = await axios.get(`/admin/student/${id}`);
+                this.selectedStudent = res.data;
+                this.setTab('students');
+            } catch (error) {
+                const msg = error.response?.data?.error || "Failed to load student";
+                alert(msg);
+            }
+        },
+
         // Students
         async fetchStudents() {
             let url = "/admin/students";
-
-            if (this.studentSearch.trim() !== "") {
-                url += `?search=${this.studentSearch}`;
-            }
-
+            if (this.studentSearch.trim() !== "") url += `?search=${this.studentSearch}`;
             const res = await axios.get(url);
             this.students = res.data;
         },
-
 
         async deactivateStudent(id) {
             try {

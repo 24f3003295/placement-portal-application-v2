@@ -1,119 +1,389 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Admin Dashboard</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-</head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — PlacementHub</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" href="/static/portal.css">
+  <style>
+    .tab-nav {
+      display: flex; gap: 4px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      flex: 1; min-width: 100px;
+      padding: 8px 16px;
+      border: none; background: transparent;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body); font-size: 13.5px; font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer; transition: all var(--transition);
+      white-space: nowrap;
+    }
+    .tab-btn:hover  { background: var(--surface); color: var(--text-primary); }
+    .tab-btn.active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-sm); }
 
+    .tab-panel { animation: fadeIn .2s ease both; }
+
+    .student-drawer {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-top: 20px;
+      box-shadow: var(--shadow-md);
+      animation: fadeUp .25s ease both;
+    }
+    .student-drawer h4 {
+      font-family: var(--font-heading); font-size: 15px; font-weight: 700;
+      margin-bottom: 16px; color: var(--text-primary);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .approval-dot {
+      width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px;
+    }
+    .dot-green  { background: var(--success); }
+    .dot-orange { background: var(--warning); }
+    .dot-red    { background: var(--danger);  }
+  </style>
+</head>
 <body>
 <div id="app">
 
-    <h2>Admin Dashboard</h2>
-    
-    <h3>Stats</h3>
-    <p>Students: [[ stats.students ]]</p>
-    <p>Companies: [[ stats.companies ]]</p>
-    <p>Jobs: [[ stats.jobs ]]</p>
-    <p>Applications: [[ stats.applications ]]</p>
+  <div class="dash-layout">
 
-    <hr>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">P</div>
+        <div>
+          <div class="sidebar-brand-name">PlacementHub</div>
+          <div class="sidebar-brand-sub">Admin Portal</div>
+        </div>
+      </div>
 
-    <h3>Companies</h3>
+      <nav class="sidebar-nav">
+        <div class="nav-label">Overview</div>
+        <div class="nav-item active" @click="setTab('companies')">
+          <span class="nav-icon">🏢</span> Companies
+        </div>
+        <div class="nav-item" @click="setTab('students')">
+          <span class="nav-icon">🎓</span> Students
+        </div>
+        <div class="nav-item" @click="setTab('jobs')">
+          <span class="nav-icon">💼</span> Jobs
+        </div>
+        <div class="nav-item" @click="setTab('applications')">
+          <span class="nav-icon">📋</span> Applications
+        </div>
+      </nav>
+    </aside>
 
-    <input v-model="companySearch" placeholder="Search company">
-    <button @click="fetchCompanies">Search</button>
+    <!-- Main -->
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-title">Admin Dashboard</div>
+        <div class="topbar-right">
+          <div class="avatar">A</div>
+        </div>
+      </header>
 
-    <table border="1">
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Approved</th>
-            <th>Actions</th>
-        </tr>
+      <div class="page-content">
 
-        <tr v-for="c in companies" :key="c.id">
-            <td>[[ c.company_name ]]</td>
-            <td>[[ c.email ]]</td>
-            <td>[[ c.approval_status ]]</td>
-            <td>
-                <button @click="approve(c.id)">Approve</button>
-                <button @click="deleteCompany(c.id)">Delete</button>
-                <button @click="deactivate(c.id)">
-                    [[ c.is_blacklisted ? 'Activate' : 'Deactivate' ]]
-                </button>
-            </td>
-        </tr>
-    </table>
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card" style="animation-delay:.05s">
+            <div class="stat-icon blue">🎓</div>
+            <div class="stat-info">
+              <div class="stat-value">[[ stats.students ?? '—' ]]</div>
+              <div class="stat-label">Total Students</div>
+            </div>
+          </div>
+          <div class="stat-card" style="animation-delay:.1s">
+            <div class="stat-icon green">🏢</div>
+            <div class="stat-info">
+              <div class="stat-value">[[ stats.companies ?? '—' ]]</div>
+              <div class="stat-label">Companies</div>
+            </div>
+          </div>
+          <div class="stat-card" style="animation-delay:.15s">
+            <div class="stat-icon orange">💼</div>
+            <div class="stat-info">
+              <div class="stat-value">[[ stats.jobs ?? '—' ]]</div>
+              <div class="stat-label">Active Jobs</div>
+            </div>
+          </div>
+          <div class="stat-card" style="animation-delay:.2s">
+            <div class="stat-icon purple">📋</div>
+            <div class="stat-info">
+              <div class="stat-value">[[ stats.applications ?? '—' ]]</div>
+              <div class="stat-label">Applications</div>
+            </div>
+          </div>
+        </div>
 
-    <hr>
+        <!-- Tab Nav -->
+        <div class="tab-nav">
+          <button class="tab-btn" :class="{active: tab==='companies'}" @click="setTab('companies')">🏢 Companies</button>
+          <button class="tab-btn" :class="{active: tab==='students'}"  @click="setTab('students')">🎓 Students</button>
+          <button class="tab-btn" :class="{active: tab==='jobs'}"      @click="setTab('jobs')">💼 Jobs</button>
+          <button class="tab-btn" :class="{active: tab==='applications'}" @click="setTab('applications')">📋 Applications</button>
+        </div>
 
-    <h3>Students</h3>
+        <!-- ── COMPANIES ── -->
+        <div class="tab-panel" v-if="tab === 'companies'">
+          <div class="card section-gap">
+            <div class="card-header">
+              <span class="card-title section-title">Companies</span>
+              <div class="toolbar" style="margin-bottom:0">
+                <div class="search-wrap">
+                  <span class="search-icon">🔍</span>
+                  <input v-model="companySearch" placeholder="Search companies…" @keyup.enter="fetchCompanies">
+                </div>
+                <button class="btn btn-secondary btn-sm" @click="fetchCompanies">Search</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Company</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Blacklist</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="c in companies" :key="c.id">
+                    <td><strong>[[ c.company_name ]]</strong></td>
+                    <td style="color:var(--text-secondary)">[[ c.email ]]</td>
+                    <td>
+                      <span class="badge" :class="c.approval_status === 'approved' ? 'badge-success' : 'badge-warning'">
+                        [[ c.approval_status ]]
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge" :class="c.is_blacklisted ? 'badge-danger' : 'badge-success'">
+                        [[ c.is_blacklisted ? 'Blacklisted' : 'Active' ]]
+                      </span>
+                    </td>
+                    <td>
+                      <div class="action-group">
+                        <button class="btn btn-success btn-sm" @click="approve(c.id)">Approve</button>
+                        <button class="btn btn-danger btn-sm" @click="deleteCompany(c.id)">Delete</button>
+                        <button class="btn btn-secondary btn-sm" @click="deactivate(c.id)">
+                          [[ c.is_blacklisted ? 'Activate' : 'Deactivate' ]]
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr v-if="!companies.length">
+                    <td colspan="5">
+                      <div class="empty-state">
+                        <div class="empty-icon">🏢</div>
+                        <p>No companies found</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-    <input v-model="studentSearch" placeholder="Search student">
-    <button @click="fetchStudents">Search</button>
+        <!-- ── STUDENTS ── -->
+        <div class="tab-panel" v-if="tab === 'students'">
+          <div class="card section-gap">
+            <div class="card-header">
+              <span class="card-title section-title">Students</span>
+              <div class="toolbar" style="margin-bottom:0">
+                <div class="search-wrap">
+                  <span class="search-icon">🔍</span>
+                  <input v-model="studentSearch" placeholder="Search students…" @keyup.enter="fetchStudents">
+                </div>
+                <button class="btn btn-secondary btn-sm" @click="fetchStudents">Search</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="s in students" :key="s.id">
+                    <td><strong>[[ s.name ]]</strong></td>
+                    <td style="color:var(--text-secondary)">[[ s.email ]]</td>
+                    <td>
+                      <span class="badge" :class="s.is_blacklisted ? 'badge-danger' : 'badge-success'">
+                        [[ s.is_blacklisted ? 'Blacklisted' : 'Active' ]]
+                      </span>
+                    </td>
+                    <td>
+                      <div class="action-group">
+                        <button class="btn btn-secondary btn-sm" @click="viewStudent(s.id)">View Profile</button>
+                        <button class="btn btn-sm" :class="s.is_blacklisted ? 'btn-success' : 'btn-warning'" @click="deactivateStudent(s.id)">
+                          [[ s.is_blacklisted ? 'Activate' : 'Deactivate' ]]
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr v-if="!students.length">
+                    <td colspan="4">
+                      <div class="empty-state">
+                        <div class="empty-icon">🎓</div>
+                        <p>No students found</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-    <table border="1">
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
+          <!-- Student Detail Drawer -->
+          <div class="student-drawer" v-if="selectedStudent">
+            <h4>🎓 Student Profile — [[ selectedStudent.name ]]</h4>
+            <div class="detail-row">
+              <span class="detail-key">Name</span>
+              <span class="detail-val">[[ selectedStudent.name ]]</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Email</span>
+              <span class="detail-val">[[ selectedStudent.email ]]</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Branch</span>
+              <span class="detail-val">[[ selectedStudent.branch || '—' ]]</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">CGPA</span>
+              <span class="detail-val">[[ selectedStudent.cgpa || '—' ]]</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Skills</span>
+              <span class="detail-val">[[ selectedStudent.skills || '—' ]]</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-key">Resume</span>
+              <span class="detail-val">
+                <a :href="selectedStudent.resume" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none">
+                  📄 View Resume
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
 
-        <tr v-for="s in students" :key="s.id">
-            <td>[[ s.name ]]</td>
-            <td>[[ s.email ]]</td>
-            <td>[[ s.is_blacklisted ? 'Blacklisted' : 'Active' ]]</td>
-            <td>
-                <button @click="deactivateStudent(s.id)">
-                    [[ s.is_blacklisted ? 'Activate' : 'Deactivate' ]]
-                </button>
-            </td>
-        </tr>
-    </table>
-    
-    <h3>Jobs</h3>
-    <table border="1">
-        <tr>
-            <th>Title</th>
-            <th>Company ID</th>
-            <th>Approved</th>
-            <th>Actions</th>
-        </tr>
-        <tr v-for="j in jobs" :key="j.id">
-            <td>[[ j.title ]]</td>
-            <td>[[ j.company_id ]]</td>
-            <td>[[ j.is_approved ]]</td>
-            <td>
-                <button @click="approveJob(j.id)">Approve</button>
-                <button @click="deleteJob(j.id)">Delete</button>
-            </td>
-        </tr>
-    </table>
+        <!-- ── JOBS ── -->
+        <div class="tab-panel" v-if="tab === 'jobs'">
+          <div class="card section-gap">
+            <div class="card-header">
+              <span class="card-title section-title">Job Listings</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Company ID</th>
+                    <th>Approved</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="j in jobs" :key="j.id">
+                    <td><strong>[[ j.title ]]</strong></td>
+                    <td style="color:var(--text-secondary)">#[[ j.company_id ]]</td>
+                    <td>
+                      <span class="badge" :class="j.is_approved ? 'badge-success' : 'badge-warning'">
+                        [[ j.is_approved ? 'Approved' : 'Pending' ]]
+                      </span>
+                    </td>
+                    <td>
+                      <div class="action-group">
+                        <button class="btn btn-success btn-sm" @click="approveJob(j.id)">Approve</button>
+                        <button class="btn btn-danger btn-sm" @click="deleteJob(j.id)">Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr v-if="!jobs.length">
+                    <td colspan="4">
+                      <div class="empty-state"><div class="empty-icon">💼</div><p>No jobs found</p></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-    <hr>
+        <!-- ── APPLICATIONS ── -->
+        <div class="tab-panel" v-if="tab === 'applications'">
+          <div class="card section-gap">
+            <div class="card-header">
+              <span class="card-title section-title">Applications</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Job ID</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="a in applications" :key="a.id">
+                    <td>#[[ a.student_id ]]</td>
+                    <td>#[[ a.job_id ]]</td>
+                    <td>
+                      <span class="badge"
+                        :class="{
+                          'badge-success': a.status==='approved'||a.status==='selected',
+                          'badge-warning': a.status==='pending'||a.status==='shortlisted',
+                          'badge-danger':  a.status==='rejected',
+                          'badge-muted':   !['approved','selected','pending','shortlisted','rejected'].includes(a.status)
+                        }">
+                        [[ a.status ]]
+                      </span>
+                    </td>
+                    <td>
+                      <div class="action-group">
+                        <button class="btn btn-success btn-sm" @click="approveApplication(a.id)">Approve</button>
+                        <button class="btn btn-danger btn-sm" @click="deleteApplication(a.id)">Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr v-if="!applications.length">
+                    <td colspan="4">
+                      <div class="empty-state"><div class="empty-icon">📋</div><p>No applications found</p></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-    <h3>Applications</h3>
-    <table border="1">
-        <tr>
-            <th>Student</th>
-            <th>Job</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-        <tr v-for="a in applications" :key="a.id">
-            <td>[[ a.student_id ]]</td>
-            <td>[[ a.job_id ]]</td>
-            <td>[[ a.status ]]</td>
-            <td>
-                <button @click="approveApplication(a.id)">Approve</button>
-                <button @click="deleteApplication(a.id)">Delete</button>
-            </td>
-        </tr>
-    </table>
-
-</div>
+      </div><!-- /page-content -->
+    </div><!-- /main-content -->
+  </div><!-- /dash-layout -->
+</div><!-- /app -->
 
 <script src="/static/admin.js"></script>
 </body>

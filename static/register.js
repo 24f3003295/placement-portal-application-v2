@@ -1,28 +1,31 @@
 const app = Vue.createApp({
+    delimiters: ['[[', ']]'],
+
     data() {
         return {
             role: "",
             email: "",
             password: "",
-
-            // company
             company_name: "",
             industry: "",
             location: "",
             website: "",
-
-            // student
             name: "",
-            course: ""
+            course: "",
+            loading: false,
+            error: ""
         }
     },
 
     methods: {
         async register() {
             if (!this.role) {
-                alert("Select role");
+                this.error = "Please select your role.";
                 return;
             }
+
+            this.loading = true;
+            this.error = "";
 
             const endpoint = this.role === "company" ? '/company/register' : '/student/register';
             const payload = this.role === "company" ? {
@@ -51,11 +54,12 @@ const app = Vue.createApp({
                     alert(result.msg);
                     window.location.href = "/login";
                 } else {
-                    // This will show you exactly what went wrong
-                    alert("Error: " + (result.error || "Registration failed"));
+                    this.error = result.error || "Registration failed. Please check your details.";
                 }
             } catch (err) {
-                alert("Connection error");
+                this.error = "Connection error. Please try again.";
+            } finally {
+                this.loading = false;
             }
         }
     }

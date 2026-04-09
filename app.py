@@ -112,6 +112,7 @@ def get_companies():
         "name": c.user.name if c.user else ""   # <-- added
     } for c in companies]
 
+# Approve Company
 @app.route('/admin/company/<int:id>/approve', methods=['PUT'])
 @role_required('admin')
 def approve_company(id):
@@ -174,6 +175,27 @@ def deactivate_company(id):
         db.session.rollback()
         return {"error": str(e)}, 500
     
+# View Student Profile
+@app.route('/admin/student/<int:id>', methods=['GET'])
+@role_required('admin')
+def admin_view_student(id):
+    from models import Student, User
+
+    student = Student.query.get(id)
+    if not student:
+        return {"error": "Student not found"}, 404
+
+    user = User.query.get(student.user_id)
+
+    return {
+        "name": user.name,
+        "email": user.email,
+        "branch": student.branch,
+        "cgpa": student.cgpa,
+        "skills": student.skills,
+        "resume": student.resume_link
+    }
+
 # Search Students
 @app.route('/admin/students', methods=['GET'])
 @role_required('admin')
@@ -368,7 +390,32 @@ def company_register():
         db.session.rollback() # This is crucial! It undoes the User creation if Company fails.
         print(f"Error: {e}") # Check your terminal to see the EXACT error (e.g., column length)
         return {"error": "Internal Server Error"}, 500
-    
+
+# View Student Profile
+@app.route('/company/student/<int:id>', methods=['GET'])
+@role_required('company')
+def company_view_student(id):
+    from models import Student, User
+
+    company, err, code = check_company_access()
+    if err:
+        return err, code
+
+    student = Student.query.get(id)
+    if not student:
+        return {"error": "Student not found"}, 404
+
+    user = User.query.get(student.user_id)
+
+    return {
+        "name": user.name,
+        "email": user.email,
+        "branch": student.branch,
+        "cgpa": student.cgpa,
+        "skills": student.skills,
+        "resume": student.resume_link
+    }
+
 # Companies can only access the dashboard when approved by admin.
 def check_company_access():
     from models import Company
@@ -511,44 +558,9 @@ def delete_application_company(id):
 
     return {"msg": "Application deleted"}
 
-    # Shortlist/Reject/Select
-    @app.route('/company/application/<int:id>/update', methods=['PUT'])
-    @role_required('company')
-    def update_application(id):
-        
-        from app import db
-        from flask import request
-        from flask_jwt_extended import get_jwt_identity
 
-        company, err, code = check_company_access()
-        if err:
-            return err, code
-        
-        company_id = company.id
-
-        data = request.json
-
-        valid_status = ["shortlisted", "selected", "rejected"]
-
-        if data.get("status") not in valid_status:
-            return {"error": "Invalid status"}, 400
-
-        app_obj = Application.query.get(id)
-        if not app_obj:
-            return {"error": "Application not found"}, 404
-
-        # SECURITY CHECK 
-        job = JobPosition.query.get(app_obj.job_id)
-        if job.company_id != company_id:
-            return {"error": "Unauthorized"}, 403
-
-        # Update
-        app_obj.status = data.get("status")
-        app_obj.feedback = data.get("feedback")
-
-        db.session.commit()
-
-        return {"msg": f"Application marked as {app_obj.status}"}
+                
+                
 
 # Upload Offer Letter if Status is Selected
 import os
@@ -842,21 +854,18 @@ def view_interviews():
 @role_required('student')
 def view_placements():
     from models import Application, Student, Company, JobPosition
+    from flask_jwt_extended import get_jwt_identity
 
     user_id = get_jwt_identity()
     student = Student.query.filter_by(user_id=user_id).first()
 
-    # We only want applications where the student was actually HIRED
     placements = Application.query.filter_by(
-        student_id=student.id, 
-        status='selected' # Make sure this matches your status name
-    ).all()
+        student_id=student.id
+    ).filter(Application.status.in_(["selected", "placed"])).all()
 
     result = []
     for p in placements:
-        # p is now an Application object
         job = JobPosition.query.get(p.job_id)
-        # Get company via the job relationship
         company = Company.query.get(job.company_id) if job else None
 
         result.append({
@@ -865,10 +874,11 @@ def view_placements():
             "job_title": job.title if job else "N/A",
             "salary": p.salary,
             "joining_date": str(p.joining_date) if p.joining_date else "TBD",
+            "status": p.status,
             "offer_letter": p.offer_letter
         })
 
-    return jsonify(result)
+    return result
 
 # DOWNLOAD OFFER LETTER
 @app.route('/student/application/<int:id>/download', methods=['GET'])

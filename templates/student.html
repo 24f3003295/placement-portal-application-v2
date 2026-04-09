@@ -1,57 +1,251 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Student Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard — PlacementHub</title>
+  <link rel="stylesheet" href="/static/portal.css">
+  <style>
+    .job-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      transition: all var(--transition);
+      animation: fadeUp .3s ease both;
+    }
+    .job-card + .job-card { margin-top: 12px; }
+    .job-card:hover { box-shadow: var(--shadow-md); border-color: #BFDBFE; transform: translateY(-1px); }
+
+    .job-card-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .job-card-title {
+      font-family: var(--font-heading); font-size: 16px; font-weight: 700;
+      color: var(--text-primary);
+    }
+    .job-card-meta {
+      font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;
+      display: flex; flex-wrap: wrap; gap: 14px;
+    }
+    .job-card-meta span { display: flex; align-items: center; gap: 4px; }
+
+    .skills-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .skill-tag {
+      background: var(--accent-light); color: var(--accent);
+      border-radius: 999px; padding: 3px 10px;
+      font-size: 12px; font-weight: 600;
+    }
+
+    .app-timeline-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      animation: fadeUp .3s ease both;
+      transition: all var(--transition);
+    }
+    .app-timeline-item + .app-timeline-item { margin-top: 12px; }
+    .app-timeline-item:hover { box-shadow: var(--shadow-md); }
+
+    .app-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .app-job-title { font-weight: 700; font-size: 15px; font-family: var(--font-heading); }
+    .app-company   { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    .app-details {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+      gap: 8px 16px; margin-top: 10px;
+    }
+    .app-detail-item { font-size: 13px; }
+    .app-detail-label { color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .app-detail-val   { color: var(--text-primary); margin-top: 2px; }
+
+    .interview-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      animation: fadeUp .3s ease both;
+      transition: all var(--transition);
+    }
+    .interview-card + .interview-card { margin-top: 12px; }
+    .interview-card:hover { box-shadow: var(--shadow-md); }
+
+    .placement-card {
+      background: linear-gradient(135deg, var(--success-light), #DCFCE7);
+      border: 1px solid #A7F3D0;
+      border-radius: var(--radius-md);
+      padding: 20px 22px;
+      animation: fadeUp .3s ease both;
+    }
+    .placement-card + .placement-card { margin-top: 12px; }
+    .placement-company { font-family: var(--font-heading); font-size: 17px; font-weight: 700; color: var(--text-primary); }
+    .placement-meta { font-size: 13.5px; color: var(--text-secondary); margin-top: 4px; margin-bottom: 14px; }
+
+    .profile-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      max-width: 600px;
+    }
+
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:600px){ .profile-grid{ grid-template-columns:1fr; } }
+
+    .section-desc { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; }
+
+    .search-bar-row {
+      display: flex; gap: 10px; margin-bottom: 20px;
+    }
+    .search-bar-row .search-wrap { flex: 1; max-width: 400px; }
+  </style>
 </head>
 <body>
 
-<h1>Student Dashboard</h1>
+<div class="dash-layout">
 
-<nav>
-    <button onclick="showSection('jobsSection'); loadJobs()">Jobs</button>
-    <button onclick="showSection('applicationsSection'); loadApplications()">My Applications</button>
-    <button onclick="showSection('interviewsSection'); loadInterviews()">Interviews</button>
-    <button onclick="showSection('placementsSection'); loadPlacements()">Placements</button>
-    <button onclick="showSection('profileSection'); loadProfile()">Profile</button>
-</nav>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">P</div>
+      <div>
+        <div class="sidebar-brand-name">PlacementHub</div>
+        <div class="sidebar-brand-sub">Student Portal</div>
+      </div>
+    </div>
 
-<hr>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Explore</div>
+      <div class="nav-item active" id="nav-jobs"
+           onclick="showSection('jobsSection'); loadJobs(); setActive('nav-jobs')">
+        <span class="nav-icon">💼</span> Browse Jobs
+      </div>
 
-<div id="profileSection" style="display:none;">
-    
-    <h2>Update Profile</h2>
-    <input id="branch" placeholder="Branch"><br><br>
-    <input id="cgpa" placeholder="CGPA"><br><br>
-    <input id="year" placeholder="Graduation Year"><br><br>
-    <input id="skillsInput" placeholder="Skills"><br><br>
-    <input id="resume" placeholder="Resume Link"><br><br>
+      <div class="nav-label">My Activity</div>
+      <div class="nav-item" id="nav-applications"
+           onclick="showSection('applicationsSection'); loadApplications(); setActive('nav-applications')">
+        <span class="nav-icon">📋</span> My Applications
+      </div>
+      <div class="nav-item" id="nav-interviews"
+           onclick="showSection('interviewsSection'); loadInterviews(); setActive('nav-interviews')">
+        <span class="nav-icon">📅</span> Interviews
+      </div>
+      <div class="nav-item" id="nav-placements"
+           onclick="showSection('placementsSection'); loadPlacements(); setActive('nav-placements')">
+        <span class="nav-icon">🏆</span> Placements
+      </div>
 
-    <button onclick="updateProfile()">Update Profile</button>
-</div>
+      <div class="nav-label">Account</div>
+      <div class="nav-item" id="nav-profile"
+           onclick="showSection('profileSection'); loadProfile(); setActive('nav-profile')">
+        <span class="nav-icon">👤</span> My Profile
+      </div>
+    </nav>
+  </aside>
 
-<div id="jobsSection">
-    <h2>Search Jobs</h2>
-    <input id="search" placeholder="Search by title, skills, company">
-    <button onclick="searchJobs()">Search</button>
+  <!-- Main -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-title" id="topbar-title">Browse Jobs</div>
+      <div class="topbar-right">
+        <div class="avatar">S</div>
+      </div>
+    </header>
 
-    <h2>Jobs</h2>
-    <ul id="jobs"></ul>
-</div>
+    <div class="page-content">
 
-<div id="applicationsSection" style="display:none;">
-    <h2>My Applications</h2>
-    <ul id="applications"></ul>
-</div>
+      <!-- ── JOBS ── -->
+      <div id="jobsSection">
+        <div class="page-header">
+          <h2>Available Jobs</h2>
+          <p>Find and apply to open positions from top companies</p>
+        </div>
+        <div class="search-bar-row">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input id="search" placeholder="Search by title, skills, company…">
+          </div>
+          <button class="btn btn-secondary" onclick="searchJobs()">Search</button>
+        </div>
+        <div id="jobs">
+          <div class="empty-state"><div class="empty-icon">💼</div><p>Loading jobs…</p></div>
+        </div>
+      </div>
 
-<div id="interviewsSection" style="display:none;">
-    <h2>Interviews</h2>
-    <ul id="interviews"></ul>
-</div>
+      <!-- ── APPLICATIONS ── -->
+      <div id="applicationsSection" style="display:none">
+        <div class="page-header">
+          <h2>My Applications</h2>
+          <p>Track the status of all your job applications</p>
+        </div>
+        <div id="applications">
+          <div class="empty-state"><div class="empty-icon">📋</div><p>Loading…</p></div>
+        </div>
+      </div>
 
-<div id="placementsSection" style="display:none;">
-    <h2>Placements</h2>
-    <ul id="placements"></ul>
-</div>
+      <!-- ── INTERVIEWS ── -->
+      <div id="interviewsSection" style="display:none">
+        <div class="page-header">
+          <h2>Scheduled Interviews</h2>
+          <p>Your upcoming interview schedule</p>
+        </div>
+        <div id="interviews">
+          <div class="empty-state"><div class="empty-icon">📅</div><p>Loading…</p></div>
+        </div>
+      </div>
+
+      <!-- ── PLACEMENTS ── -->
+      <div id="placementsSection" style="display:none">
+        <div class="page-header">
+          <h2>My Placements</h2>
+          <p>Congratulations on your placement!</p>
+        </div>
+        <div id="placements">
+          <div class="empty-state"><div class="empty-icon">🏆</div><p>Loading…</p></div>
+        </div>
+      </div>
+
+      <!-- ── PROFILE ── -->
+      <div id="profileSection" style="display:none">
+        <div class="page-header">
+          <h2>My Profile</h2>
+          <p>Keep your academic details and resume up to date</p>
+        </div>
+        <div class="profile-card">
+          <div class="profile-grid">
+            <div class="form-group">
+              <label>Branch / Department</label>
+              <input id="branch" class="form-control" placeholder="e.g. Computer Science">
+            </div>
+            <div class="form-group">
+              <label>CGPA</label>
+              <input id="cgpa" class="form-control" placeholder="e.g. 8.5">
+            </div>
+            <div class="form-group">
+              <label>Graduation Year</label>
+              <input id="year" class="form-control" placeholder="e.g. 2025">
+            </div>
+            <div class="form-group">
+              <label>Skills</label>
+              <input id="skillsInput" class="form-control" placeholder="Python, React, SQL…">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Resume Link</label>
+            <input id="resume" class="form-control" placeholder="https://drive.google.com/…">
+          </div>
+          <button class="btn btn-primary" onclick="updateProfile()">
+            💾 Save Profile
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /dash-layout -->
 
 <script src="{{ url_for('static', filename='student.js') }}"></script>
 </body>
