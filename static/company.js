@@ -29,8 +29,10 @@ window.loadDashboard = function () {
                         <div class="job-meta">Job ID #${j.id}</div>
                     </div>
                     <div class="action-group">
-                        <button class="btn btn-ghost btn-sm" onclick="toggleJob(${j.id})">Toggle</button>
-                        <button class="btn btn-secondary btn-sm" onclick="viewApps(${j.id})">View Apps</button>
+                        <button class="btn btn-ghost btn-sm" onclick="toggleJob(${j.id})">
+                            ${j.is_active ? 'Close Job' : 'Open Job'}
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="viewApps(${j.id})"> 📊 Applications </button>
                     </div>
                 </div>
             `).join('');
@@ -52,6 +54,10 @@ window.loadDashboard = function () {
                     <div class="app-header">
                         <div class="app-id">Application #${a.id}</div>
                         <span class="badge ${statusClass}">${a.status}</span>
+                    </div>
+
+                    <div style="font-size:13.5px; color:var(--text-secondary); margin-bottom:6px">
+                        Job: <strong>${a.job_title || ('Job #' + a.job_id)}</strong>
                     </div>
 
                     <div style="font-size:13.5px; color:var(--text-secondary); margin-bottom:12px">
@@ -164,9 +170,46 @@ window.viewApps = function (jobId) {
         headers: { "Authorization": "Bearer " + token }
     })
     .then(res => res.json())
-    .then(data => { alert(JSON.stringify(data, null, 2)); })
-    .catch(err => console.error("View apps error:", err));
+    .then(data => {
+
+        const container = document.getElementById("overlayContent");
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <p>No applications for this job</p>
+                </div>`;
+        } else {
+            container.innerHTML = data.map(a => `
+                <div class="app-card">
+                    <div class="app-header">
+                        <div class="app-id">Application #${a.id}</div>
+                        <span class="badge badge-muted">${a.status}</span>
+                    </div>
+
+                    <div style="font-size:13px; margin-bottom:10px;">
+                        Student ID: <b>#${a.student_id}</b>
+                    </div>
+
+                    <div class="app-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="viewStudent(${a.student_id})">
+                            👤 Profile
+                        </button>
+
+                        <button class="btn btn-secondary btn-sm" onclick="scheduleInterview(${a.id})">
+                            📅 Schedule
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById("jobAppsOverlay").style.display = "block";
+    })
+    .catch(err => console.error(err));
 };
+
  
 // =======================
 // UPDATE STATUS
@@ -364,6 +407,10 @@ function sendReminderUI(appId) {
         alert("Error sending reminder");
     });
 }
+
+window.closeJobAppsOverlay = function () {
+    document.getElementById("jobAppsOverlay").style.display = "none";
+};
 
 
 window.onload = function () {

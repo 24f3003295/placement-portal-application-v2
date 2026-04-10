@@ -641,3 +641,49 @@ tbody tr:hover { background: var(--surface-2); }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .auth-card { padding: 32px 24px; }
 }
+
+#jobAppsOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+}
+
+.overlay-backdrop {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+}
+
+.overlay-box {
+  position: relative;
+  width: 60%;
+  max-height: 80vh;
+  margin: 5vh auto;
+  background: white;
+  border-radius: 12px;
+  overflow-y: auto;
+  padding: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.overlay-header h3 {
+  margin: 0;
+}
+
+#applications {
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+

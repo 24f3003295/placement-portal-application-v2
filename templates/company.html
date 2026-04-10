@@ -216,8 +216,19 @@
       </div>
     </div>
 
+    <div id="jobAppsOverlay" style="display:none;">
+      <div class="overlay-backdrop" onclick="closeJobAppsOverlay()"></div>
 
- 
+      <div class="overlay-box">
+        <div class="overlay-header">
+          <h3>Job Applications</h3>
+          <button onclick="closeJobAppsOverlay()">✖</button>
+        </div>
+
+        <div id="overlayContent"></div>
+      </div>
+    </div>
+
     </div><!-- /page-content -->
   </div><!-- /main-content -->
 </div><!-- /dash-layout -->

@@ -107,6 +107,8 @@ def admin_stats():
     }
 
 # Search Companies
+from cache import get_cache, set_cache
+
 @app.route('/admin/companies', methods=['GET'])
 @role_required('admin')
 def get_companies():
@@ -115,6 +117,14 @@ def get_companies():
 
     search = request.args.get('search', '')
 
+    cache_key = f"companies:{search}"
+
+    # CHECK CACHE
+    cached = get_cache(cache_key)
+    if cached:
+        return cached
+
+    # DB QUERY
     if search:
         companies = Company.query.join(User).filter(
             Company.company_name.ilike(f"%{search}%") |
@@ -123,14 +133,18 @@ def get_companies():
     else:
         companies = Company.query.all()
 
-    return [{
+    result = [{
         "id": c.id,
         "company_name": c.company_name,
         "approval_status": c.approval_status,
         "is_blacklisted": c.is_blacklisted,
         "email": c.user.email if c.user else "",
-        "name": c.user.name if c.user else ""   # <-- added
+        "name": c.user.name if c.user else ""
     } for c in companies]
+
+    set_cache(cache_key, result, ttl=300)
+
+    return result
 
 # Approve Company
 @app.route('/admin/company/<int:id>/approve', methods=['PUT'])
@@ -217,10 +231,19 @@ def admin_view_student(id):
     }
 
 # Search Students
+from cache import get_cache, set_cache
+
 @app.route('/admin/students', methods=['GET'])
 @role_required('admin')
 def get_students():
     search = request.args.get('search', '')
+
+    cache_key = f"students:{search}"
+
+    # CHECK CACHE
+    cached = get_cache(cache_key)
+    if cached:
+        return cached
 
     query = db.session.query(Student, User).join(User, Student.user_id == User.id)
 
@@ -229,7 +252,7 @@ def get_students():
 
     results = query.all()
 
-    return [{
+    result = [{
         "id": student.id,
         "name": user.name,
         "email": user.email,
@@ -237,6 +260,11 @@ def get_students():
         "branch": student.branch,
         "cgpa": student.cgpa
     } for student, user in results]
+
+    set_cache(cache_key, result, ttl=300)
+
+    return result
+
 
 # Deactivate Student
 @app.route('/admin/student/<int:id>/deactivate', methods=['PUT'])
@@ -553,6 +581,8 @@ def get_job_applications(id):
     return [{
         "id": a.id,
         "student_id": a.student_id,
+        "job_id": a.job_id,
+        "job_title": a.job.title,
         "status": a.status,
         "interview_date": a.interview_date,
         "interview_location": a.interview_location
@@ -759,6 +789,8 @@ def update_profile():
 
 
 # VIEW & SEARCH JOBS
+from cache import get_cache, set_cache
+
 @app.route('/student/jobs', methods=['GET'])
 @jwt_required()
 @role_required('student')
@@ -766,15 +798,22 @@ def view_jobs():
     from models import JobPosition, Company
     from flask import request
 
-    search = request.args.get('search')
+    search = request.args.get('search', '')
 
+    cache_key = f"jobs:{search}"
+
+    # 1. CHECK CACHE
+    cached = get_cache(cache_key)
+    if cached:
+        return cached
+
+    # 2. DB QUERY
     query = JobPosition.query.join(Company).filter(
         JobPosition.is_active == True,
         JobPosition.is_approved == True
     )
 
-    # Apply search ONLY if provided
-    if search and search.strip() != "":
+    if search.strip():
         query = query.filter(
             (JobPosition.title.ilike(f"%{search}%")) |
             (JobPosition.skills_required.ilike(f"%{search}%")) |
@@ -783,7 +822,7 @@ def view_jobs():
 
     jobs = query.all()
 
-    return [{
+    result = [{
         "id": j.id,
         "title": j.title,
         "company": j.company.company_name,
@@ -791,6 +830,11 @@ def view_jobs():
         "salary": j.salary,
         "experience": j.experience
     } for j in jobs]
+
+    # 3. STORE CACHE
+    set_cache(cache_key, result, ttl=300)
+
+    return result
 
 # APPLY FOR JOB
 @app.route('/student/apply/<int:job_id>', methods=['POST'])
