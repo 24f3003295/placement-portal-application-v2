@@ -5,6 +5,10 @@ from utils import role_required
 from flask_jwt_extended import JWTManager,jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash
 from datetime import timedelta
+from celery_worker import make_celery
+from celery.schedules import crontab
+from flask_mail import Mail
+
 
 app = Flask(__name__,)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ppa.db'
@@ -12,11 +16,27 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'super-secret-key'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=5)
 
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'vedant.ghodekar15@gmail.com'
+app.config['MAIL_PASSWORD'] = 'yjxjuuvubqhrrkav'
+mail = Mail(app)
+
+
 db.init_app(app)
 jwt = JWTManager(app)
 
 app.register_blueprint(auth_bp, url_prefix='/api')
 
+celery = make_celery(app)
+celery.conf.beat_schedule = {
+    'send-reminders-every-hour': {
+        'task': 'task.send_interview_reminders',
+        'schedule': 3600.0,
+    },
+}
 # CREATE DB + ADMIN
 with app.app_context():
     db.create_all()
@@ -469,7 +489,9 @@ def company_dashboard():
             "id": a.id,
             "student_id": a.student_id,
             "job_id": a.job_id,
-            "status": a.status
+            "status": a.status,
+            "interview_date": a.interview_date,
+            "interview_location": a.interview_location
         } for a in applications],
 
         "shortlisted": [{
@@ -531,7 +553,9 @@ def get_job_applications(id):
     return [{
         "id": a.id,
         "student_id": a.student_id,
-        "status": a.status
+        "status": a.status,
+        "interview_date": a.interview_date,
+        "interview_location": a.interview_location
     } for a in apps]
 
 # Delete Application
@@ -905,6 +929,67 @@ def download_offer_letter(id):
         return send_file(application.offer_letter, as_attachment=True)
     except Exception as e:
         return {"error": f"Could not find file: {str(e)}"}, 404
+
+# Trigger Monthly Report
+@app.route('/company/report', methods=['POST'])
+@jwt_required()
+@role_required('company')
+def generate_report():
+    from task import generate_monthly_report
+
+    task = generate_monthly_report.delay()
+
+    return {"msg": "Report generation started", "task_id": task.id}
+
+# Export csv company
+@app.route('/company/export', methods=['GET'])
+@jwt_required()
+@role_required('company')
+def export_company():
+    from flask_jwt_extended import get_jwt_identity
+    from task import export_company_csv
+    from models import Company
+
+    user_id = get_jwt_identity()
+    company = Company.query.filter_by(user_id=user_id).first()
+
+    task = export_company_csv.delay(company.id)
+
+    return {"msg": "Export started", "task_id": task.id}
+
+# Export csv student
+@app.route('/student/export', methods=['GET'])
+@jwt_required()
+@role_required('student')
+def export_data():
+    from flask_jwt_extended import get_jwt_identity
+    from task import export_student_csv
+
+    user_id = get_jwt_identity()
+    student = Student.query.filter_by(user_id=user_id).first()
+
+    task = export_student_csv.delay(student.id)
+
+    return {"msg": "Export started", "task_id": task.id}
+
+# Send Interview Reminders
+@app.route('/test/reminder/<int:app_id>')
+def test_reminder(app_id):
+    from task import send_single_reminder
+    task = send_single_reminder.delay(app_id)
+    return {"task_id": task.id}
+
+
+# Check task status
+@app.route('/task/<task_id>')
+def get_task(task_id):
+    from task import export_student_csv
+    task = export_student_csv.AsyncResult(task_id)
+
+    if task.state == 'SUCCESS':
+        return {"status": "done", "file": task.result}
+
+    return {"status": task.state}
 
 if __name__ == "__main__":
     app.run(debug=True)

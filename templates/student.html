@@ -181,10 +181,26 @@
           <h2>My Applications</h2>
           <p>Track the status of all your job applications</p>
         </div>
+        <!-- Export CSV Button -->
+        <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+          
+          <div style="font-size:13px; color:var(--text-muted)">
+            Download your application history
+          </div>
+
+          <button class="btn btn-primary btn-sm" onclick="exportCSV()">
+            📥 Export CSV
+          </button>
+
+        </div>
+
+        <!-- Status -->
+        <div id="exportStatus" style="margin-bottom:12px; font-size:13px;"></div>
         <div id="applications">
           <div class="empty-state"><div class="empty-icon">📋</div><p>Loading…</p></div>
         </div>
       </div>
+
 
       <!-- ── INTERVIEWS ── -->
       <div id="interviewsSection" style="display:none">

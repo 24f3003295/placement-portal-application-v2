@@ -267,6 +267,58 @@ function downloadOffer(id) {
     .catch(err => alert(err.message));
 }
 
+// =======================
+// EXPORT CSV (STUDENT)
+// =======================
+window.exportCSV = function () {
+    fetch('/student/export', {
+        method: 'GET',
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("exportStatus").innerText =
+            "⏳ Export started...";
+
+        checkExportStatus(data.task_id);
+    })
+    .catch(err => console.error("Export error:", err));
+};
+
+
+// =======================
+// CHECK STATUS
+// =======================
+function checkExportStatus(taskId) {
+    const interval = setInterval(() => {
+        fetch(`/task/${taskId}`)
+        .then(res => res.json())
+        .then(data => {
+
+            if (data.status === "done") {
+                clearInterval(interval);
+
+                document.getElementById("exportStatus").innerHTML =
+                    `✅ Export Ready! <br>
+                     <a href="/${data.file}" target="_blank" class="btn btn-secondary btn-sm">
+                        📥 Download CSV
+                     </a>`;
+
+                alert("✅ Your CSV export is ready!");
+            } 
+            else {
+                document.getElementById("exportStatus").innerText =
+                    "⏳ Processing... " + data.status;
+            }
+
+        })
+        .catch(err => console.error("Status error:", err));
+    }, 2000);
+}
+
+
 // ─── Auto Load ────────────────────────────────
 window.onload = function () {
     showSection('jobsSection');

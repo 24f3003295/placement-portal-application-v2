@@ -20,13 +20,13 @@
     }
     .job-card:hover { box-shadow: var(--shadow-md); border-color: #C7D2FE; transform: translateY(-1px); }
     .job-card + .job-card { margin-top: 10px; }
-
+ 
     .job-title-text {
       font-weight: 700; font-size: 15px; color: var(--text-primary);
       font-family: var(--font-heading);
     }
     .job-meta { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
-
+ 
     .app-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -37,11 +37,11 @@
     }
     .app-card + .app-card { margin-top: 12px; }
     .app-card:hover { box-shadow: var(--shadow-md); }
-
+ 
     .app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .app-id { font-weight: 700; font-size: 14px; color: var(--text-primary); }
     .app-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-
+ 
     .post-job-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -49,10 +49,10 @@
       padding: 28px;
       box-shadow: var(--shadow-sm);
     }
-
+ 
     .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     @media(max-width:600px){ .form-row-2{ grid-template-columns:1fr; } }
-
+ 
     .student-detail-card {
       background: var(--accent-light);
       border: 1px solid #BFDBFE;
@@ -64,17 +64,17 @@
       font-family: var(--font-heading); font-weight: 700; font-size: 16px;
       color: var(--accent); margin-bottom: 16px;
     }
-
+ 
     input[type="file"] { display: none; }
-
+ 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     @media(max-width:900px){ .grid-2{ grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-
+ 
 <div class="dash-layout">
-
+ 
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-brand">
@@ -94,7 +94,7 @@
       </div>
     </nav>
   </aside>
-
+ 
   <!-- Main -->
   <div class="main-content">
     <header class="topbar">
@@ -104,12 +104,12 @@
         <div class="avatar">C</div>
       </div>
     </header>
-
+ 
     <div class="page-content">
-
+ 
       <!-- Jobs + Applications grid -->
       <div class="grid-2">
-
+ 
         <!-- Jobs -->
         <div>
           <div class="card">
@@ -121,7 +121,7 @@
             </div>
           </div>
         </div>
-
+ 
         <!-- Applications -->
         <div>
           <div class="card">
@@ -133,17 +133,17 @@
             </div>
           </div>
         </div>
-
+ 
       </div>
-
+ 
       <!-- Student Details -->
       <div id="studentDetails" style="margin-top:24px"></div>
-
+ 
       <!-- Post Job -->
       <div id="postJobSection" style="margin-top:28px">
         <div class="post-job-card">
           <div class="section-title" style="margin-bottom:20px">Post a New Job</div>
-
+ 
           <div class="form-row-2">
             <div class="form-group">
               <label>Job Title</label>
@@ -162,20 +162,70 @@
               <input id="salary" class="form-control" placeholder="e.g. 800000">
             </div>
           </div>
-
+ 
           <button class="btn btn-primary" onclick="createJob()">
             ➕ Post Job
           </button>
         </div>
       </div>
 
+      <!-- Placement Reports -->
+    <div style="margin-top:28px">
+    <div class="card">
+        <div class="card-header">
+        <span class="section-title">📊 Placement Reports</span>
+        </div>
+
+        <div style="padding:20px">
+        <p style="color:var(--text-secondary); margin-bottom:12px">
+            Generate monthly placement analytics report (async job).
+        </p>
+
+        <button class="btn btn-primary" onclick="generateReport()">
+            📄 Generate Monthly Report
+        </button>
+
+        <div id="reportStatus" style="margin-top:12px; font-size:13px; color:var(--text-muted)">
+            No report generated yet
+        </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- CSV Export -->
+    <div style="margin-top:28px">
+      <div class="card">
+        <div class="card-header">
+          <span class="section-title">📥 Export Applications</span>
+        </div>
+
+        <div style="padding:20px">
+          <p style="color:var(--text-secondary); margin-bottom:12px">
+            Export all applications and placement data as CSV (async job).
+          </p>
+
+          <button class="btn btn-primary" onclick="exportCompanyCSV()">
+            📥 Export CSV
+          </button>
+
+          <div id="companyExportStatus"
+              style="margin-top:12px; font-size:13px; color:var(--text-muted)">
+            No export started yet
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+ 
     </div><!-- /page-content -->
   </div><!-- /main-content -->
 </div><!-- /dash-layout -->
-
+ 
 <!-- Hidden file input for offer letter -->
 <input type="file" id="offerLetterInput" accept=".pdf">
-
+ 
 <script src="{{ url_for('static', filename='company.js') }}"></script>
 </body>
 </html>
+ 
